@@ -1,0 +1,30 @@
+'use strict';
+
+const express = require('express');
+const logger = require('../../config/logger');
+const errorHandler = require('../../shared/middleware/error-handler.middleware');
+const { buildRouter } = require('./routes');
+const requestLogMiddleware = require('../../shared/middleware/request-log.middleware');
+
+
+function buildApp() {
+  const app = express();
+
+  app.use(express.json());
+  app.use(requestLogMiddleware('admin'));
+
+  app.get('/health', function (req, res) {
+    logger.info({ endpoint: '/health' }, 'admin health check');
+    res.json({ ok: true });
+  });
+
+  app.use('/api', buildRouter());
+
+  app.use(errorHandler);
+
+  return app;
+}
+
+module.exports = {
+  buildApp: buildApp
+};

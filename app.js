@@ -1,32 +1,45 @@
-// Loading environment variables from .env file
 require('dotenv').config()
-
 const express = require('express')
 const mongoose = require('mongoose')
-// Initializing Pino logger for tracking server events as required
 const logger = require('pino')({ transport: { target: 'pino-pretty' } })
+const Log = require('./models/log.model') // Import Log model for DB logging
+
+// Routes
+const costRoutes = require('./routes/costs')
+const userRoutes = require('./routes/users')
+const aboutRoutes = require('./routes/about')
+const reportRoutes = require('./routes/reports')
+const logRoutes = require('./routes/logs')
 
 const app = express()
-
-// Middleware to parse JSON data in request body
 app.use(express.json())
 
-// Connect to MongoDB Atlas using the URI from our .env file
+// Middleware to log every HTTP request to MongoDB Atlas
+app.use(async (req, res, next) => {
+    try {
+        const newLog = new Log({
+            method: req.method,
+            url: req.url,
+            params: req.method === 'GET' ? req.query : req.body
+        })
+        await newLog.save() // Save log item to the 'logs' collection
+        next()
+    } catch (err) {
+        next() // Continue to ensure server reliability
+    }
+})
+
+// Using Routes
+app.use('/api', costRoutes)
+app.use('/api', userRoutes)
+app.use('/api', aboutRoutes)
+app.use('/api', reportRoutes)
+app.use('/api', logRoutes)
+
+// Database Connection
 mongoose.connect(process.env.MONGODB_URI)
-    .then(() => {
-        logger.info('Connected to MongoDB Atlas successfully')
-    })
-    .catch((err) => {
-        logger.error('Database connection error: ', err)
-    })
+    .then(() => logger.info('Connected to MongoDB Atlas successfully'))
+    .catch(err => logger.error('Database connection error: ', err))
 
-// Simple health check route to see if the server is alive
-app.get('/health', (req, res) => {
-    res.json({ status: 'server is running' })
-})
-
-// Starting the server on the port defined in .env or default 3000
 const PORT = process.env.PORT || 3000
-app.listen(PORT, () => {
-    logger.info(`Server is running on port ${PORT}`)
-})
+app.listen(PORT, () => logger.info(`Server running on port ${PORT}`))
