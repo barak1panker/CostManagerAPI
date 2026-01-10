@@ -35,8 +35,8 @@ app.use(async (req, res, next) => {
 app.get('/api/about', (req, res) => {
     try {
         const team = [
-            { first_name: 'YourFirstName', last_name: 'YourLastName' },
-            { first_name: 'PartnerFirstName', last_name: 'PartnerLastName' }
+            { first_name: 'Barak', last_name: 'Penker' },
+            { first_name: 'Adi', last_name: 'Beker' }
         ];
         // Send the JSON response back to the user
         res.json(team);
