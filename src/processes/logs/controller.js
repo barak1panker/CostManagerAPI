@@ -1,6 +1,6 @@
 'use strict';
 
-const Log = require('../../../models/log.model');
+const Log = require('./models/log.model');
 
 async function getAllLogs(req, res, next) {
   try {

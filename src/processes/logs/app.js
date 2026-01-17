@@ -2,7 +2,7 @@
 
 const express = require('express');
 const logger = require('../../config/logger');
-const errorHandler = require('../../shared/middleware/error-handler.middleware');
+const errorHandler = require('../../shared/middleware/errorhandler.middleware');
 const { buildRouter } = require('./routes');
 
 function buildApp() {

@@ -1,8 +1,8 @@
 'use strict';
 
-const Cost = require('../../../models/cost.model');
-const ReportCache = require('../../../models/report-cache.model');
-const { logEndpointAccess } = require('../../shared/utils/endpoint-log');
+const Cost = require('./models/cost.model');
+const ReportCache = require('./models/reportcache.model');
+const { logEndpointAccess } = require('../../shared/utils/endpointlog');
 
 const CATEGORIES = ['food', 'health', 'housing', 'sports', 'education'];
 
@@ -30,6 +30,19 @@ function isPastMonth(year, month) {
   return false;
 }
 
+function parseOptionalDate(value) {
+  if (value === undefined || value === null || value === '') {
+    return null;
+  }
+
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) {
+    return 'invalid';
+  }
+
+  return d;
+}
+
 async function addCost(req, res, next) {
   try {
     await logEndpointAccess(req, 'costs', 'POST /api/add');
@@ -55,6 +68,13 @@ async function addCost(req, res, next) {
       throw err;
     }
 
+    if (!CATEGORIES.includes(category.trim())) {
+      const err = new Error('category must be one of: food, health, housing, sports, education');
+      err.id = 16;
+      err.status = 400;
+      throw err;
+    }
+
     if (!Number.isFinite(userid)) {
       const err = new Error('userid must be a number');
       err.id = 12;
@@ -69,12 +89,38 @@ async function addCost(req, res, next) {
       throw err;
     }
 
-    const created = await Cost.create({
+    const parsedDate = parseOptionalDate(body.date);
+
+    if (parsedDate === 'invalid') {
+      const err = new Error('date must be a valid date');
+      err.id = 14;
+      err.status = 400;
+      throw err;
+    }
+
+    if (parsedDate) {
+      const now = new Date();
+      if (parsedDate.getTime() < now.getTime()) {
+        const err = new Error('cost date cannot be in the past');
+        err.id = 15;
+        err.status = 400;
+        throw err;
+      }
+    }
+
+    const doc = {
       description: description.trim(),
       category: category.trim(),
       userid: userid,
       sum: sum
-    });
+    };
+
+    if (parsedDate) {
+      doc.createdAt = parsedDate;
+      doc.updatedAt = parsedDate;
+    }
+
+    const created = await Cost.create(doc);
 
     res.json({
       description: created.description,

@@ -1,6 +1,6 @@
 'use strict';
 
-const { writeDbLog } = require('./db-log');
+const { writeDbLog } = require('./dblog');
 
 async function logEndpointAccess(req, processName, endpointName) {
   try {

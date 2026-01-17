@@ -1,6 +1,6 @@
 'use strict';
 
-const Log = require('../../../models/log.model');
+const Log = require('../../processes/logs/models/log.model');
 
 async function writeDbLog(info) {
   await Log.create({
