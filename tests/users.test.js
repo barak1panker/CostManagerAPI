@@ -3,19 +3,19 @@
 const request = require('supertest');
 
 test('Users: GET /health returns ok', async function () {
-  const res = await request('http://localhost:3001').get('/health');
+  const res = await request('https://users-service-jhzu.onrender.com').get('/health');
   expect(res.status).toBe(200);
   expect(res.body).toEqual({ ok: true });
 });
 
 test('Users: GET /api/users returns an array', async function () {
-  const res = await request('http://localhost:3001').get('/api/users');
+  const res = await request('https://users-service-jhzu.onrender.com').get('/api/users');
   expect(res.status).toBe(200);
   expect(Array.isArray(res.body)).toBe(true);
 });
 
 test('Users: GET /api/users/:id returns required fields', async function () {
-  const res = await request('http://localhost:3001').get('/api/users/123123');
+  const res = await request('https://users-service-jhzu.onrender.com').get('/api/users/123123');
   expect(res.status).toBe(200);
   expect(res.body).toHaveProperty('first_name');
   expect(res.body).toHaveProperty('last_name');
@@ -24,7 +24,7 @@ test('Users: GET /api/users/:id returns required fields', async function () {
 });
 
 test('Users: POST /api/add rejects invalid id', async function () {
-  const res = await request('http://localhost:3001')
+  const res = await request('https://users-service-jhzu.onrender.com')
     .post('/api/add')
     .send({ id: 'abc', first_name: 'a', last_name: 'b', birthday: '1990-01-01' });
 
