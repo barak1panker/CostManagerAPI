@@ -3,13 +3,13 @@
 const request = require('supertest');
 
 test('Admin: GET /health returns ok', async function () {
-  const res = await request('http://localhost:3004').get('/health');
+  const res = await request('https://admin-service-qxia.onrender.com').get('/health');
   expect(res.status).toBe(200);
   expect(res.body).toEqual({ ok: true });
 });
 
 test('Admin: GET /api/about returns only first_name and last_name', async function () {
-  const res = await request('http://localhost:3004').get('/api/about');
+  const res = await request('https://admin-service-qxia.onrender.com').get('/api/about');
   expect(res.status).toBe(200);
   expect(Array.isArray(res.body)).toBe(true);
 
