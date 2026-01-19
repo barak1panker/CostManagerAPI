@@ -3,7 +3,7 @@
 const { spawn } = require('child_process');
 
 function startProcess(cmd, args, readyText) {
-  const child = spawn(cmd, args, { shell: true });
+  const child = spawn(cmd, args, { shell: true }); // Start a process (like a server)
 
   return new Promise(function (resolve, reject) {
     let resolved = false;
@@ -12,15 +12,14 @@ function startProcess(cmd, args, readyText) {
       const text = data.toString();
       if (!resolved && text.includes(readyText)) {
         resolved = true;
-        resolve(child);
+        resolve(child); // Resolve when the process prints the ready text
       }
     });
 
     child.stderr.on('data', function (data) {
-      // אם יש שגיאה קריטית, הטסטים לא יתקעו בלי סוף
       const text = data.toString();
       if (!resolved && (text.includes('Fatal startup error') || text.includes('Error:'))) {
-        reject(new Error(text));
+        reject(new Error(text)); // Stop tests if a critical error happens
       }
     });
 
@@ -30,26 +29,21 @@ function startProcess(cmd, args, readyText) {
       }
     });
 
-    // timeout קטן שלא יתקע
     setTimeout(function () {
       if (!resolved) {
-        reject(new Error('timeout waiting for process to be ready'));
+        reject(new Error('timeout waiting for process to be ready')); // Avoid waiting forever
       }
     }, 15000);
   });
 }
 
 function stopProcess(child) {
-  if (!child) {
-    return;
-  }
+  if (!child) return;
   try {
-    child.kill();
+    child.kill(); // Stop the process
   } catch (e) {
+    // Ignore kill errors
   }
 }
 
-module.exports = {
-  startProcess: startProcess,
-  stopProcess: stopProcess
-};
+module.exports = { startProcess, stopProcess }; // Export helpers

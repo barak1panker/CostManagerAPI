@@ -7,7 +7,7 @@ function errorHandler(err, req, res, next) {
   let message = err && err.message ? err.message : 'Unexpected error';
 
   if (err && err.code === 11000) {
-    status = 409;
+    status = 409; // Mongo duplicate key error
     errorId = 11000;
     message = 'Duplicate key error: a record with the same id already exists';
   }
@@ -19,4 +19,4 @@ function errorHandler(err, req, res, next) {
     
 }
 
-module.exports = errorHandler;
+module.exports = errorHandler; // Export middleware

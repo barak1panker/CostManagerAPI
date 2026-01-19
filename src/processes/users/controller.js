@@ -6,18 +6,18 @@ const { logEndpointAccess } = require('../../shared/utils/endpointlog');
 
 async function getAllUsers(req, res, next) {
   try {
-    await logEndpointAccess(req, 'users', 'GET /api/users');
+    await logEndpointAccess(req, 'users', 'GET /api/users'); // Save endpoint access log
 
-    const users = await User.find({}, { _id: 0 }).lean();
+    const users = await User.find({}, { _id: 0 }).lean(); // Get all users
     res.json(users);
   } catch (err) {
-    next(err);
+    next(err); // Send error to global error handler
   }
 }
 
 async function getUserDetails(req, res, next) {
   try {
-    await logEndpointAccess(req, 'users', 'GET /api/users/:id');
+    await logEndpointAccess(req, 'users', 'GET /api/users/:id'); // Save endpoint access log
 
     const id = Number(req.params.id);
 
@@ -28,7 +28,7 @@ async function getUserDetails(req, res, next) {
       throw err;
     }
 
-    const user = await User.findOne({ id: id }, { _id: 0 }).lean();
+    const user = await User.findOne({ id: id }, { _id: 0 }).lean(); // Find user by id
     if (!user) {
       const err = new Error('User not found');
       err.id = 3;
@@ -36,6 +36,7 @@ async function getUserDetails(req, res, next) {
       throw err;
     }
 
+    // Calculate the total sum of all costs for this user
     const agg = await Cost.aggregate([
       { $match: { userid: id } },
       { $group: { _id: null, total: { $sum: '$sum' } } }
@@ -50,13 +51,13 @@ async function getUserDetails(req, res, next) {
       total: total
     });
   } catch (err) {
-    next(err);
+    next(err); // Send error to global error handler
   }
 }
 
 async function addUser(req, res, next) {
   try {
-    await logEndpointAccess(req, 'users', 'POST /api/add');
+    await logEndpointAccess(req, 'users', 'POST /api/add'); // Save endpoint access log
 
     const body = req.body || {};
 
@@ -65,6 +66,7 @@ async function addUser(req, res, next) {
     const lastName = body.last_name;
     const birthday = body.birthday;
 
+    // Basic input validation
     if (!Number.isFinite(id)) {
       const err = new Error('id must be a number');
       err.id = 4;
@@ -108,7 +110,7 @@ async function addUser(req, res, next) {
       birthday: created.birthday
     });
   } catch (err) {
-    next(err);
+    next(err); // Send error to global error handler
   }
 }
 

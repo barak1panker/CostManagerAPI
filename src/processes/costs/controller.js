@@ -17,35 +17,29 @@ function buildEmptyCostsByCategory() {
 }
 
 function isPastMonth(year, month) {
+  // Check if the requested (year, month) is before the current month
   const now = new Date();
   const currentYear = now.getUTCFullYear();
   const currentMonth = now.getUTCMonth() + 1;
 
-  if (year < currentYear) {
-    return true;
-  }
-  if (year === currentYear && month < currentMonth) {
-    return true;
-  }
+  if (year < currentYear) return true;
+  if (year === currentYear && month < currentMonth) return true;
   return false;
 }
 
 function parseOptionalDate(value) {
-  if (value === undefined || value === null || value === '') {
-    return null;
-  }
+  // Convert optional date string to Date object (or return null/invalid)
+  if (value === undefined || value === null || value === '') return null;
 
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) {
-    return 'invalid';
-  }
+  if (Number.isNaN(d.getTime())) return 'invalid';
 
   return d;
 }
 
 async function addCost(req, res, next) {
   try {
-    await logEndpointAccess(req, 'costs', 'POST /api/add');
+    await logEndpointAccess(req, 'costs', 'POST /api/add'); // Save endpoint access log
 
     const body = req.body || {};
 
@@ -54,6 +48,7 @@ async function addCost(req, res, next) {
     const userid = Number(body.userid);
     const sum = Number(body.sum);
 
+    // Basic input validation
     if (typeof description !== 'string' || description.trim().length === 0) {
       const err = new Error('description is required');
       err.id = 10;
@@ -98,6 +93,7 @@ async function addCost(req, res, next) {
       throw err;
     }
 
+    // If user sends a date, it cannot be in the past
     if (parsedDate) {
       const now = new Date();
       if (parsedDate.getTime() < now.getTime()) {
@@ -115,6 +111,7 @@ async function addCost(req, res, next) {
       sum: sum
     };
 
+    // If date provided, save it as createdAt/updatedAt
     if (parsedDate) {
       doc.createdAt = parsedDate;
       doc.updatedAt = parsedDate;
@@ -135,12 +132,13 @@ async function addCost(req, res, next) {
 
 async function getMonthlyReport(req, res, next) {
   try {
-    await logEndpointAccess(req, 'costs', 'GET /api/report');
+    await logEndpointAccess(req, 'costs', 'GET /api/report'); // Save endpoint access log
 
     const userid = Number(req.query.id);
     const year = Number(req.query.year);
     const month = Number(req.query.month);
 
+    // Validate query params
     if (!Number.isFinite(userid)) {
       const err = new Error('id must be a number');
       err.id = 20;
@@ -162,8 +160,9 @@ async function getMonthlyReport(req, res, next) {
       throw err;
     }
 
-    const shouldUseCache = isPastMonth(year, month);
+    const shouldUseCache = isPastMonth(year, month); // Cache only for past months
 
+    // Try to return cached report first (for past months)
     if (shouldUseCache) {
       const cached = await ReportCache.findOne(
         { userid: userid, year: year, month: month },
@@ -175,6 +174,7 @@ async function getMonthlyReport(req, res, next) {
       }
     }
 
+    // Build date range for the requested month (UTC)
     const start = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0));
     const end = new Date(Date.UTC(year, month, 1, 0, 0, 0));
 
@@ -186,6 +186,7 @@ async function getMonthlyReport(req, res, next) {
       { _id: 0, description: 1, category: 1, sum: 1, createdAt: 1 }
     ).lean();
 
+    // Group costs by category
     const grouped = buildEmptyCostsByCategory();
 
     for (const c of costs) {
@@ -200,6 +201,7 @@ async function getMonthlyReport(req, res, next) {
       }
     }
 
+    // Convert grouped object into the required array format
     const costsArray = [];
     for (const cat of CATEGORIES) {
       const obj = {};
@@ -214,6 +216,7 @@ async function getMonthlyReport(req, res, next) {
       costs: costsArray
     };
 
+    // Save cache for past months
     if (shouldUseCache) {
       await ReportCache.updateOne(
         { userid: userid, year: year, month: month },

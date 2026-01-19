@@ -9,22 +9,19 @@ const requestLogMiddleware = require('../../shared/middleware/requestlog.middlew
 function buildApp() {
   const app = express();
 
-  app.use(express.json());
-  app.use(requestLogMiddleware('costs'));
-
+  app.use(express.json()); // Parse JSON requests
+  app.use(requestLogMiddleware('costs')); // Log requests for the costs service
 
   app.get('/health', function (req, res) {
-    logger.info({ endpoint: '/health' }, 'costs health check');
+    logger.info({ endpoint: '/health' }, 'costs health check'); // Health check log
     res.json({ ok: true });
   });
 
-  app.use('/api', buildRouter());
+  app.use('/api', buildRouter()); // Main API routes
 
-  app.use(errorHandler);
+  app.use(errorHandler); // Global error handler
 
   return app;
 }
 
-module.exports = {
-  buildApp: buildApp
-};
+module.exports = { buildApp }; // Export app builder

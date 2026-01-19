@@ -6,11 +6,9 @@ const controller = require('./controller');
 function buildRouter() {
   const router = express.Router();
 
-  router.get('/about', controller.getAbout);
+  router.get('/about', controller.getAbout); // GET /api/about route
 
   return router;
 }
 
-module.exports = {
-  buildRouter: buildRouter
-};
+module.exports = { buildRouter }; // Export router builder

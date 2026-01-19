@@ -6,11 +6,11 @@ const logger = require('../../config/logger');
 const { buildApp } = require('./app');
 
 async function start() {
-  await connectMongo();
+  await connectMongo(); // Connect to MongoDB before starting the server
   logger.info('Connected to MongoDB');
 
   const app = buildApp();
-  const port = Number(mustGet('LOGS_PORT'));
+  const port = Number(mustGet('LOGS_PORT')); // Get port from env
 
   app.listen(port, function () {
     logger.info({ port: port }, 'Logs process is listening');
@@ -18,6 +18,6 @@ async function start() {
 }
 
 start().catch(function (err) {
-  logger.error({ err: err }, 'Fatal startup error');
+  logger.error({ err: err }, 'Fatal startup error'); // Log and exit if startup fails
   process.exit(1);
 });

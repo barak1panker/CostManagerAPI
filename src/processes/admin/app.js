@@ -6,25 +6,22 @@ const errorHandler = require('../../shared/middleware/errorhandler.middleware');
 const { buildRouter } = require('./routes');
 const requestLogMiddleware = require('../../shared/middleware/requestlog.middleware');
 
-
 function buildApp() {
   const app = express();
 
-  app.use(express.json());
-  app.use(requestLogMiddleware('admin'));
+  app.use(express.json()); // Parse JSON body from requests
+  app.use(requestLogMiddleware('admin')); // Log incoming requests for the admin service
 
   app.get('/health', function (req, res) {
-    logger.info({ endpoint: '/health' }, 'admin health check');
+    logger.info({ endpoint: '/health' }, 'admin health check'); // Simple health log
     res.json({ ok: true });
   });
 
-  app.use('/api', buildRouter());
+  app.use('/api', buildRouter()); // Main API routes
 
-  app.use(errorHandler);
+  app.use(errorHandler); // Global error handler
 
   return app;
 }
 
-module.exports = {
-  buildApp: buildApp
-};
+module.exports = { buildApp }; // Export app builder

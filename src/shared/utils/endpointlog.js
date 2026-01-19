@@ -11,11 +11,10 @@ async function logEndpointAccess(req, processName, endpointName) {
       path: req.originalUrl,
       endpoint: endpointName,
       message: 'endpoint accessed'
-    });
+    }); // Save endpoint access log to MongoDB
   } catch (err) {
+    // Ignore log errors (do not break the request)
   }
 }
 
-module.exports = {
-  logEndpointAccess: logEndpointAccess
-};
+module.exports = { logEndpointAccess }; // Export function
